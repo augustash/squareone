@@ -1,5 +1,5 @@
-/* @copyright  Copyright (c) 2007 August Ash Inc. (http://www.augustash.com)
- * @version    $Id: aailib.js 72 2009-03-17 13:31:01Z pmcwilliams $
+/*
+ * Square One JS utility library.
  */
 
 /* Prepare Links - using jQuery

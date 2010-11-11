@@ -20,13 +20,13 @@
  *   this, we have to override the theme function. You have to first find the
  *   theme function that generates the output, and then "catch" it and modify it
  *   here. The easiest way to do it is to copy the original function in its
- *   entirety and paste it here, changing the prefix from theme_ to squareone_.
+ *   entirety and paste it here, changing the prefix from theme_ to STARTER_.
  *   For example:
  *
  *     original: theme_breadcrumb()
- *     theme override: squareone_breadcrumb()
+ *     theme override: STARTER_breadcrumb()
  *
- *   where squareone is the name of your sub-theme. For example, the
+ *   where STARTER is the name of your sub-theme. For example, the
  *   zen_classic theme would define a zen_classic_breadcrumb() function.
  *
  *   If you would like to override any of the theme functions used in Zen core,
@@ -71,7 +71,7 @@
  */
 /* -- Delete this line if you want to use and modify this code
 // Example: optionally add a fixed width CSS file.
-if (theme_get_setting('squareone_fixed')) {
+if (theme_get_setting('STARTER_fixed')) {
   drupal_add_css(path_to_theme() . '/layout-fixed.css', 'theme', 'all');
 }
 // */
@@ -80,8 +80,8 @@ if (theme_get_setting('squareone_fixed')) {
 /**
  * Implementation of HOOK_theme().
  */
-function squareone_theme(&$existing, $type, $theme, $path) {
-  //$hooks = zen_theme($existing, $type, $theme, $path);
+function STARTER_theme(&$existing, $type, $theme, $path) {
+  $hooks = zen_theme($existing, $type, $theme, $path);
   // Add your theme hooks like this:
   /*
   $hooks['hook_name_here'] = array( // Details go here );
@@ -98,27 +98,11 @@ function squareone_theme(&$existing, $type, $theme, $path) {
  * @param $hook
  *   The name of the template being rendered (name of the .tpl.php file.)
  */
-function squareone_preprocess(&$vars, $hook) {
-  // In D6, the page.tpl uses a different variable name to hold the classes.
-  $key = ($hook == 'page' || $hook == 'maintenance_page') ? 'body_classes' : 'classes';
-
-  // Create a D7-standard classes_array variable.
-  if (array_key_exists($key, $vars)) {
-    // Views (and possibly other modules) have templates with a $classes
-    // variable that isn't a string, so we leave those variables alone.
-    if (is_string($vars[$key])) {
-      $vars['classes_array'] = explode(' ', $vars[$key]);
-      unset($vars[$key]);
-    }
-  }
-  else {
-    $vars['classes_array'] = array($hook);
-  }
-  // Add support for Skinr
-  if (!empty($vars['skinr']) && array_key_exists('classes_array', $vars)) {
-    $vars['classes_array'][] = $vars['skinr'];
-  }
+/* -- Delete this line if you want to use this function
+function STARTER_preprocess(&$vars, $hook) {
+  $vars['sample_variable'] = t('Lorem ipsum.');
 }
+// */
 
 /**
  * Override or insert variables into the page templates.
@@ -128,80 +112,11 @@ function squareone_preprocess(&$vars, $hook) {
  * @param $hook
  *   The name of the template being rendered ("page" in this case.)
  */
-function squareone_preprocess_page(&$vars, $hook) {
-  // If the user is silly and enables Zen as the theme, add some styles.
-  if ($GLOBALS['theme'] == 'zen') {
-    include_once './' . _zen_path() . '/zen-internals/template.zen.inc';
-    _zen_preprocess_page($vars, $hook);
-  }
-  // Add conditional stylesheets.
-  elseif (!module_exists('conditional_styles')) {
-    $vars['styles'] .= $vars['conditional_styles'] = variable_get('conditional_styles_' . $GLOBALS['theme'], '');
-  }
-
-  // Classes for body element. Allows advanced theming based on context
-  // (home page, node of certain type, etc.)
-  // Remove the mostly useless page-ARG0 class.
-  if ($index = array_search(preg_replace('![^abcdefghijklmnopqrstuvwxyz0-9-_]+!s', '', 'page-'. drupal_strtolower(arg(0))), $vars['classes_array'])) {
-    unset($vars['classes_array'][$index]);
-  }
-  if (!$vars['is_front']) {
-    // Add unique class for each page.
-    $path = drupal_get_path_alias($_GET['q']);
-    $vars['classes_array'][] = drupal_html_class('page-' . $path);
-    // Add unique class for each website section.
-    list($section, ) = explode('/', $path, 2);
-    if (arg(0) == 'node') {
-      if (arg(1) == 'add') {
-        $section = 'node-add';
-      }
-      elseif (is_numeric(arg(1)) && (arg(2) == 'edit' || arg(2) == 'delete')) {
-        $section = 'node-' . arg(2);
-      }
-    }
-    $vars['classes_array'][] = drupal_html_class('section-' . $section);
-  }
-  if (theme_get_setting('zen_wireframes')) {
-    $vars['classes_array'][] = 'with-wireframes'; // Optionally add the wireframes style.
-  }
-  // We need to re-do the $layout and body classes because
-  // template_preprocess_page() assumes sidebars are named 'left' and 'right'.
-  $vars['layout'] = 'none';
-  if (!empty($vars['sidebar_first'])) {
-    $vars['layout'] = 'first';
-  }
-  if (!empty($vars['sidebar_second'])) {
-    $vars['layout'] = ($vars['layout'] == 'first') ? 'both' : 'second';
-  }
-  // If the layout is 'none', then template_preprocess_page() will already have
-  // set a 'no-sidebars' class since it won't find a 'left' or 'right' sidebar.
-  if ($vars['layout'] != 'none') {
-    // Remove the incorrect 'no-sidebars' class.
-    if ($index = array_search('no-sidebars', $vars['classes_array'])) {
-      unset($vars['classes_array'][$index]);
-    }
-    // Set the proper layout body classes.
-    if ($vars['layout'] == 'both') {
-      $vars['classes_array'][] = 'two-sidebars';
-    }
-    else {
-      $vars['classes_array'][] = 'one-sidebar';
-      $vars['classes_array'][] = 'sidebar-' . $vars['layout'];
-    }
-  }
-  // Store the menu item since it has some useful information.
-  $vars['menu_item'] = menu_get_item();
-  switch ($vars['menu_item']['page_callback']) {
-    case 'views_page':
-      // Is this a Views page?
-      $vars['classes_array'][] = 'page-views';
-      break;
-    case 'page_manager_page_execute':
-      // Is this a Panels page?
-      $vars['classes_array'][] = 'page-panels';
-      break;
-  }
+/* -- Delete this line if you want to use this function
+function STARTER_preprocess_page(&$vars, $hook) {
+  $vars['sample_variable'] = t('Lorem ipsum.');
 }
+// */
 
 /**
  * Override or insert variables into the node templates.
@@ -212,7 +127,7 @@ function squareone_preprocess_page(&$vars, $hook) {
  *   The name of the template being rendered ("node" in this case.)
  */
 /* -- Delete this line if you want to use this function
-function squareone_preprocess_node(&$vars, $hook) {
+function STARTER_preprocess_node(&$vars, $hook) {
   $vars['sample_variable'] = t('Lorem ipsum.');
 }
 // */
@@ -226,7 +141,7 @@ function squareone_preprocess_node(&$vars, $hook) {
  *   The name of the template being rendered ("comment" in this case.)
  */
 /* -- Delete this line if you want to use this function
-function squareone_preprocess_comment(&$vars, $hook) {
+function STARTER_preprocess_comment(&$vars, $hook) {
   $vars['sample_variable'] = t('Lorem ipsum.');
 }
 // */
@@ -240,7 +155,7 @@ function squareone_preprocess_comment(&$vars, $hook) {
  *   The name of the template being rendered ("block" in this case.)
  */
 /* -- Delete this line if you want to use this function
-function squareone_preprocess_block(&$vars, $hook) {
+function STARTER_preprocess_block(&$vars, $hook) {
   $vars['sample_variable'] = t('Lorem ipsum.');
 }
 // */
@@ -249,10 +164,10 @@ function squareone_preprocess_block(&$vars, $hook) {
  * Allows for menu items that go nowhere. To create one such menu item,
  * enter 'http://no.link' for the path. This function takes care of the rest.
  */
-function squareone_menu_item_link($link) {
+function STARTER_menu_item_link($link) {
   if (!$link['page_callback'] && strpos( $link['href'], 'no.link')) {
     return '<a href="javascript:void(0)" class="nolink">'. $link['title'] .'</a>';
   } else {
-    return menu_item_link($link); // <<< Make sure this says "zen_"
+    return zen_menu_item_link($link); // <<< Make sure this says "zen_"
   }
 }
