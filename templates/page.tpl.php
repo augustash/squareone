@@ -88,9 +88,6 @@
 </head>
 
 <body class="<?php print $body_classes; ?>">
-	
-  <!-- DO NOT REMOVE, prints little admin link in top left corner -->
-  <?php if (!empty($admin)) print $admin; ?>
  
   <?php if ($primary_links || $secondary_links || $navbar): ?>
 		<p class="access"><a href="#main" title="Skip to content">Skip to content</a></p>

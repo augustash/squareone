@@ -3,7 +3,7 @@
 
   ; The name and description of the theme used on the admin/build/themes page.
 name        = Square One
-description = Default theme for August Ash Drupal sites.
+description = Base theme for August Ash Drupal sites.
 
   ; The screenshot used on the admin/build/themes page.
 screenshot = screenshot.png
@@ -14,7 +14,6 @@ screenshot = screenshot.png
   ; required fields for a Zen sub-theme. The "engine" field is not used in a
   ; sub-theme since the engine is inherited from its base theme.
 core       = 6.x
-base theme = zen
 
   ; This section adds CSS files to your theme. The media type is specified in
   ; the brackets. Typical CSS media types include "all", "screen", "print", and
@@ -30,10 +29,6 @@ stylesheets[print][] = css/print.css
   ; our sub-theme, we specify it in our .info file (and we don't need to have a
   ; stylesheet in our sub-theme with that name.) For example, we prevent the
   ; zen.css file in the base theme from being included by specifying it here.
-stylesheets[all][]   = zen.css
-stylesheets[all][]   = tabs.css
-stylesheets[all][]   = html-elements.css
-stylesheets[all][]	 = block-editing.css
 
   ; Set the conditional stylesheets that are processed by IE.
 conditional-stylesheets[if IE][all][] = css/ie.css
